@@ -47,14 +47,7 @@ public class CheckService {
         check.setDate(date1);
         String date2 = sdf2.format(check.getCheckOnTime());
         Date time = sdf2.parse(date2);
-        String time1 = onTime + ":00";
-        Date time2;
-        try {
-            time2 = sdf2.parse(time1);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            time2 = sdf2.parse("08:30:00");
-        }
+        Date time2 = parseAttendanceTime(onTime, "08:30:00", sdf2);
         if(time.before(time2)){
             check.setCheckOnStatus("正常");
         }else {
@@ -75,15 +68,12 @@ public class CheckService {
         check1.setEmployeeID(check.getEmployeeID());
         check1.setDate(date1);
         Check check2 = findByNumberAndDate(check1);
+        if (check2 == null) {
+            return 0;
+        }
         String date2 = sdf2.format(check.getCheckOffTime());
         Date time = sdf2.parse(date2);
-        String time1 = offTime + ":00";
-        Date time2 = null;
-        try {
-            time2 = sdf2.parse(time1);
-        } catch (ParseException e) {
-            time2 = sdf2.parse("17:30:00");
-        }
+        Date time2 = parseAttendanceTime(offTime, "17:30:00", sdf2);
         if(time.after(time2)){
             check2.setCheckOffStatus("正常");
         }else {
@@ -241,5 +231,15 @@ public class CheckService {
             }
         }
         return days;
+    }
+
+    private Date parseAttendanceTime(String configuredTime, String fallbackTime, SimpleDateFormat formatter)
+            throws ParseException {
+        String targetTime = configuredTime + ":00";
+        try {
+            return formatter.parse(targetTime);
+        } catch (ParseException e) {
+            return formatter.parse(fallbackTime);
+        }
     }
 }
